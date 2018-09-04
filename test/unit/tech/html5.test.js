@@ -537,8 +537,7 @@ QUnit.test('should always return currentSource_ if set', function(assert) {
   assert.equal(currentSrc.call({currentSource_: {src: 'test2'}}),
               'test2',
               'sould return source from currentSource_, if nothing else set');
-  assert.equal(currentSrc.call({currentSource_: {src: 'test2'},
-                               el_: {currentSrc: 'test1'}}),
+  assert.equal(currentSrc.call({currentSource_: {src: 'test2'}, el_: {currentSrc: 'test1'}}),
               'test2',
               'sould return source from  source set, not from element');
 });
