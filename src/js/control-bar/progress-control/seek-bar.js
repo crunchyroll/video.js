@@ -148,6 +148,13 @@ class SeekBar extends Slider {
 
     // Set new time (tell player to seek to new time)
     this.player_.currentTime(newTime);
+
+    /* timeupdate isn't guaranteed to fire every time it updates
+     * Therefore we want to force the UI to update immediately - Ellation
+     */
+    this.player_.controlBar.currentTimeDisplay.updateContent(null);
+    this.player_.controlBar.progressControl.seekBar.playProgressBar.updateDataAttr(null);
+    this.player_.controlBar.progressControl.seekBar.update();
   }
 
   /**
