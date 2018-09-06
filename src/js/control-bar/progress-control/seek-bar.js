@@ -6,7 +6,6 @@ import Component from '../../component.js';
 import * as Fn from '../../utils/fn.js';
 import formatTime from '../../utils/format-time.js';
 import computedStyle from '../../utils/computed-style.js';
-import window from 'global/window';
 
 import './load-progress-bar.js';
 import './play-progress-bar.js';
@@ -141,8 +140,8 @@ class SeekBar extends Slider {
      * The easiest way to check is just to access it and catch the exception if we don't have access.
      */
     try {
-      window.parent.addEventListener('mousemove', this.handleGlobalMouseMove);
-      window.parent.addEventListener('mouseup', this.handleGlobalMouseUp);
+      window.parent.addEventListener('mousemove', this.handleGlobalMouseMove); // eslint-disable-line no-undef
+      window.parent.addEventListener('mouseup', this.handleGlobalMouseUp); // eslint-disable-line no-undef
     } catch (e) {
       // Can't access parent
     }
@@ -193,8 +192,8 @@ class SeekBar extends Slider {
      * The easiest way to check is just to access it and catch the exception if we don't have access.
      */
     try {
-      window.parent.removeEventListener('mousemove', this.handleGlobalMouseMove);
-      window.parent.removeEventListener('mouseup', this.handleGlobalMouseUp);
+      window.parent.removeEventListener('mousemove', this.handleGlobalMouseMove); // eslint-disable-line no-undef
+      window.parent.removeEventListener('mouseup', this.handleGlobalMouseUp); // eslint-disable-line no-undef
     } catch (e) {
       // Can't access parent
     }

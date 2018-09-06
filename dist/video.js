@@ -4286,10 +4286,6 @@ var _computedStyle = _dereq_(80);
 
 var _computedStyle2 = _interopRequireDefault(_computedStyle);
 
-var _window = _dereq_(97);
-
-var _window2 = _interopRequireDefault(_window);
-
 _dereq_(15);
 
 _dereq_(17);
@@ -4450,8 +4446,8 @@ var SeekBar = function (_Slider) {
      * The easiest way to check is just to access it and catch the exception if we don't have access.
      */
     try {
-      _window2['default'].parent.addEventListener('mousemove', this.handleGlobalMouseMove);
-      _window2['default'].parent.addEventListener('mouseup', this.handleGlobalMouseUp);
+      window.parent.addEventListener('mousemove', this.handleGlobalMouseMove); // eslint-disable-line no-undef
+      window.parent.addEventListener('mouseup', this.handleGlobalMouseUp); // eslint-disable-line no-undef
     } catch (e) {
       // Can't access parent
     }
@@ -4506,8 +4502,8 @@ var SeekBar = function (_Slider) {
      * The easiest way to check is just to access it and catch the exception if we don't have access.
      */
     try {
-      _window2['default'].parent.removeEventListener('mousemove', this.handleGlobalMouseMove);
-      _window2['default'].parent.removeEventListener('mouseup', this.handleGlobalMouseUp);
+      window.parent.removeEventListener('mousemove', this.handleGlobalMouseMove); // eslint-disable-line no-undef
+      window.parent.removeEventListener('mouseup', this.handleGlobalMouseUp); // eslint-disable-line no-undef
     } catch (e) {
       // Can't access parent
     }
@@ -4564,7 +4560,7 @@ SeekBar.prototype.playerEvent = 'timeupdate';
 _component2['default'].registerComponent('SeekBar', SeekBar);
 exports['default'] = SeekBar;
 
-},{"15":15,"17":17,"20":20,"5":5,"57":57,"80":80,"83":83,"84":84,"97":97}],20:[function(_dereq_,module,exports){
+},{"15":15,"17":17,"20":20,"5":5,"57":57,"80":80,"83":83,"84":84}],20:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
