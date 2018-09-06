@@ -6,6 +6,7 @@ import Component from '../../component.js';
 import * as Fn from '../../utils/fn.js';
 import formatTime from '../../utils/format-time.js';
 import computedStyle from '../../utils/computed-style.js';
+import window from 'global/window';
 
 import './load-progress-bar.js';
 import './play-progress-bar.js';
@@ -32,6 +33,9 @@ class SeekBar extends Slider {
     this.on(player, 'timeupdate', this.updateProgress);
     this.on(player, 'ended', this.updateProgress);
     player.ready(Fn.bind(this, this.updateProgress));
+
+    this.handleGlobalMouseMove = this.handleGlobalMouseMove.bind(this);
+    this.handleGlobalMouseUp = this.handleGlobalMouseUp.bind(this);
 
     if (options.playerOptions &&
         options.playerOptions.controlBar &&
@@ -140,8 +144,8 @@ class SeekBar extends Slider {
      * The easiest way to check is just to access it and catch the exception if we don't have access.
      */
     try {
-      window.parent.addEventListener('mousemove', this.handleGlobalMouseMove); // eslint-disable-line no-undef
-      window.parent.addEventListener('mouseup', this.handleGlobalMouseUp); // eslint-disable-line no-undef
+      window.parent.addEventListener('mousemove', this.handleGlobalMouseMove);
+      window.parent.addEventListener('mouseup', this.handleGlobalMouseUp);
     } catch (e) {
       // Can't access parent
     }
