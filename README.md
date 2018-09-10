@@ -120,3 +120,4 @@ Video.js is [licensed][license] under the Apache License, Version 2.0.
 [travis-link]: https://travis-ci.org/videojs/video.js
 
 [vjs]: http://videojs.com
+
