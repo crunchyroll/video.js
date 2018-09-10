@@ -10,7 +10,7 @@
  * <https://github.com/mozilla/vtt.js/blob/master/LICENSE>
  */
 
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.videojs = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.videojs = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -337,7 +337,7 @@ var _log = _dereq_(86);
 
 var _log2 = _interopRequireDefault(_log);
 
-var _document = _dereq_(94);
+var _document = _dereq_(96);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -635,7 +635,7 @@ var ClickableComponent = function (_Component) {
 _component2['default'].registerComponent('ClickableComponent', ClickableComponent);
 exports['default'] = ClickableComponent;
 
-},{"5":5,"81":81,"82":82,"83":83,"86":86,"88":88,"94":94}],4:[function(_dereq_,module,exports){
+},{"5":5,"81":81,"82":82,"83":83,"86":86,"88":88,"96":96}],4:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -739,7 +739,7 @@ exports['default'] = CloseButton;
 
 exports.__esModule = true;
 
-var _window = _dereq_(95);
+var _window = _dereq_(97);
 
 var _window2 = _interopRequireDefault(_window);
 
@@ -2562,7 +2562,7 @@ var Component = function () {
 Component.registerComponent('Component', Component);
 exports['default'] = Component;
 
-},{"81":81,"82":82,"83":83,"85":85,"86":86,"87":87,"91":91,"95":95}],6:[function(_dereq_,module,exports){
+},{"81":81,"82":82,"83":83,"85":85,"86":86,"87":87,"91":91,"97":97}],6:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -4286,6 +4286,10 @@ var _computedStyle = _dereq_(80);
 
 var _computedStyle2 = _interopRequireDefault(_computedStyle);
 
+var _window = _dereq_(97);
+
+var _window2 = _interopRequireDefault(_window);
+
 _dereq_(15);
 
 _dereq_(17);
@@ -4330,6 +4334,9 @@ var SeekBar = function (_Slider) {
     _this.on(player, 'timeupdate', _this.updateProgress);
     _this.on(player, 'ended', _this.updateProgress);
     player.ready(Fn.bind(_this, _this.updateProgress));
+
+    _this.handleGlobalMouseMove = _this.handleGlobalMouseMove.bind(_this);
+    _this.handleGlobalMouseUp = _this.handleGlobalMouseUp.bind(_this);
 
     if (options.playerOptions && options.playerOptions.controlBar && options.playerOptions.controlBar.progressControl && options.playerOptions.controlBar.progressControl.keepTooltipsInside) {
       _this.keepTooltipsInside = options.playerOptions.controlBar.progressControl.keepTooltipsInside;
@@ -4417,6 +4424,14 @@ var SeekBar = function (_Slider) {
     return percent >= 1 ? 1 : percent;
   };
 
+  SeekBar.prototype.handleGlobalMouseMove = function handleGlobalMouseMove(event) {
+    this.handleMouseMove(event);
+  };
+
+  SeekBar.prototype.handleGlobalMouseUp = function handleGlobalMouseUp(event) {
+    this.handleMouseUp(event);
+  };
+
   /**
    * Handle mouse down on seek bar
    *
@@ -4432,6 +4447,17 @@ var SeekBar = function (_Slider) {
 
     this.videoWasPlaying = !this.player_.paused();
     this.player_.pause();
+
+    /* An iframe can only access its parent if they are on the same domain (Same Origin Policy).
+     * On production, VILOS and the host app are on the same domain but in testing they aren't.
+     * The easiest way to check is just to access it and catch the exception if we don't have access.
+     */
+    try {
+      _window2['default'].parent.addEventListener('mousemove', this.handleGlobalMouseMove);
+      _window2['default'].parent.addEventListener('mouseup', this.handleGlobalMouseUp);
+    } catch (e) {
+      // Can't access parent
+    }
 
     _Slider.prototype.handleMouseDown.call(this, event);
   };
@@ -4456,6 +4482,13 @@ var SeekBar = function (_Slider) {
 
     // Set new time (tell player to seek to new time)
     this.player_.currentTime(newTime);
+
+    /* timeupdate isn't guaranteed to fire every time it updates
+     * Therefore we want to force the UI to update immediately - Ellation
+     */
+    this.player_.controlBar.currentTimeDisplay.updateContent(null);
+    this.player_.controlBar.progressControl.seekBar.playProgressBar.updateDataAttr(null);
+    this.player_.controlBar.progressControl.seekBar.update();
   };
 
   /**
@@ -4470,6 +4503,17 @@ var SeekBar = function (_Slider) {
 
   SeekBar.prototype.handleMouseUp = function handleMouseUp(event) {
     _Slider.prototype.handleMouseUp.call(this, event);
+
+    /* An iframe can only access its parent if they are on the same domain.
+     * On production, VILOS and the host app are on the same domain but in testing they aren't.
+     * The easiest way to check is just to access it and catch the exception if we don't have access.
+     */
+    try {
+      _window2['default'].parent.removeEventListener('mousemove', this.handleGlobalMouseMove); // eslint-disable-line no-undef
+      _window2['default'].parent.removeEventListener('mouseup', this.handleGlobalMouseUp); // eslint-disable-line no-undef
+    } catch (e) {
+      // Can't access parent
+    }
 
     this.player_.scrubbing(false);
     if (this.videoWasPlaying) {
@@ -4523,7 +4567,7 @@ SeekBar.prototype.playerEvent = 'timeupdate';
 _component2['default'].registerComponent('SeekBar', SeekBar);
 exports['default'] = SeekBar;
 
-},{"15":15,"17":17,"20":20,"5":5,"57":57,"80":80,"83":83,"84":84}],20:[function(_dereq_,module,exports){
+},{"15":15,"17":17,"20":20,"5":5,"57":57,"80":80,"83":83,"84":84,"97":97}],20:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -5759,11 +5803,11 @@ var _fn = _dereq_(83);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _window = _dereq_(95);
+var _window = _dereq_(97);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _document = _dereq_(94);
+var _document = _dereq_(96);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -5911,7 +5955,7 @@ var TextTrackMenuItem = function (_MenuItem) {
 _component2['default'].registerComponent('TextTrackMenuItem', TextTrackMenuItem);
 exports['default'] = TextTrackMenuItem;
 
-},{"48":48,"5":5,"83":83,"94":94,"95":95}],32:[function(_dereq_,module,exports){
+},{"48":48,"5":5,"83":83,"96":96,"97":97}],32:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -7346,7 +7390,7 @@ exports['default'] = extendFn;
 
 exports.__esModule = true;
 
-var _document = _dereq_(94);
+var _document = _dereq_(96);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -7398,7 +7442,7 @@ if (browserApi) {
 
 exports['default'] = FullscreenApi;
 
-},{"94":94}],45:[function(_dereq_,module,exports){
+},{"96":96}],45:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -8865,11 +8909,11 @@ var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _document = _dereq_(94);
+var _document = _dereq_(96);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _window = _dereq_(95);
+var _window = _dereq_(97);
 
 var _window2 = _interopRequireDefault(_window);
 
@@ -8917,7 +8961,7 @@ var _mediaError = _dereq_(46);
 
 var _mediaError2 = _interopRequireDefault(_mediaError);
 
-var _tuple = _dereq_(97);
+var _tuple = _dereq_(101);
 
 var _tuple2 = _interopRequireDefault(_tuple);
 
@@ -12543,7 +12587,7 @@ TECH_EVENTS_RETRIGGER.forEach(function (event) {
 _component2['default'].registerComponent('Player', Player);
 exports['default'] = Player;
 
-},{"1":1,"4":4,"41":41,"44":44,"45":45,"46":46,"5":5,"50":50,"55":55,"59":59,"60":60,"61":61,"62":62,"63":63,"68":68,"69":69,"71":71,"76":76,"78":78,"79":79,"8":8,"81":81,"82":82,"83":83,"85":85,"86":86,"87":87,"88":88,"89":89,"90":90,"91":91,"94":94,"95":95,"97":97}],52:[function(_dereq_,module,exports){
+},{"1":1,"101":101,"4":4,"41":41,"44":44,"45":45,"46":46,"5":5,"50":50,"55":55,"59":59,"60":60,"61":61,"62":62,"63":63,"68":68,"69":69,"71":71,"76":76,"78":78,"79":79,"8":8,"81":81,"82":82,"83":83,"85":85,"86":86,"87":87,"88":88,"89":89,"90":90,"91":91,"96":96,"97":97}],52:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -12992,11 +13036,11 @@ var _events = _dereq_(82);
 
 var Events = _interopRequireWildcard(_events);
 
-var _document = _dereq_(94);
+var _document = _dereq_(96);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _window = _dereq_(95);
+var _window = _dereq_(97);
 
 var _window2 = _interopRequireDefault(_window);
 
@@ -13124,7 +13168,7 @@ exports.autoSetup = autoSetup;
 exports.autoSetupTimeout = autoSetupTimeout;
 exports.hasLoaded = hasLoaded;
 
-},{"81":81,"82":82,"94":94,"95":95}],57:[function(_dereq_,module,exports){
+},{"81":81,"82":82,"96":96,"97":97}],57:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -13710,7 +13754,7 @@ var _component = _dereq_(5);
 
 var _component2 = _interopRequireDefault(_component);
 
-var _window = _dereq_(95);
+var _window = _dereq_(97);
 
 var _window2 = _interopRequireDefault(_window);
 
@@ -14865,7 +14909,7 @@ _component2['default'].registerComponent('Flash', Flash);
 _tech2['default'].registerTech('Flash', Flash);
 exports['default'] = Flash;
 
-},{"5":5,"58":58,"62":62,"81":81,"88":88,"90":90,"92":92,"95":95}],60:[function(_dereq_,module,exports){
+},{"5":5,"58":58,"62":62,"81":81,"88":88,"90":90,"92":92,"97":97}],60:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -14896,7 +14940,7 @@ var _log = _dereq_(86);
 
 var _log2 = _interopRequireDefault(_log);
 
-var _tsml = _dereq_(98);
+var _tsml = _dereq_(103);
 
 var _tsml2 = _interopRequireDefault(_tsml);
 
@@ -14904,11 +14948,11 @@ var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
-var _document = _dereq_(94);
+var _document = _dereq_(96);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _window = _dereq_(95);
+var _window = _dereq_(97);
 
 var _window2 = _interopRequireDefault(_window);
 
@@ -16808,7 +16852,7 @@ _component2['default'].registerComponent('Html5', Html5);
 _tech2['default'].registerTech('Html5', Html5);
 exports['default'] = Html5;
 
-},{"5":5,"62":62,"78":78,"81":81,"83":83,"86":86,"87":87,"88":88,"91":91,"92":92,"94":94,"95":95,"98":98}],61:[function(_dereq_,module,exports){
+},{"103":103,"5":5,"62":62,"78":78,"81":81,"83":83,"86":86,"87":87,"88":88,"91":91,"92":92,"96":96,"97":97}],61:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -16951,11 +16995,11 @@ var _mediaError = _dereq_(46);
 
 var _mediaError2 = _interopRequireDefault(_mediaError);
 
-var _window = _dereq_(95);
+var _window = _dereq_(97);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _document = _dereq_(94);
+var _document = _dereq_(96);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -17550,7 +17594,7 @@ var Tech = function (_Component) {
     // signals that the Tech is ready at which point Tech.el_ is part of the DOM
     // before inserting the WebVTT script
     if (_document2['default'].body.contains(this.el())) {
-      var vtt = _dereq_(99);
+      var vtt = _dereq_(104);
 
       // load via require if available and vtt.js script location was not passed in
       // as an option. novtt builds will turn the above require call into an empty object
@@ -18315,7 +18359,7 @@ _component2['default'].registerComponent('MediaTechController', Tech);
 Tech.registerTech('Tech', Tech);
 exports['default'] = Tech;
 
-},{"46":46,"5":5,"63":63,"65":65,"66":66,"70":70,"72":72,"76":76,"79":79,"83":83,"86":86,"87":87,"88":88,"90":90,"94":94,"95":95,"99":99}],63:[function(_dereq_,module,exports){
+},{"104":104,"46":46,"5":5,"63":63,"65":65,"66":66,"70":70,"72":72,"76":76,"79":79,"83":83,"86":86,"87":87,"88":88,"90":90,"96":96,"97":97}],63:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -18328,7 +18372,7 @@ var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
-var _document = _dereq_(94);
+var _document = _dereq_(96);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -18498,7 +18542,7 @@ var AudioTrackList = function (_TrackList) {
 
 exports['default'] = AudioTrackList;
 
-},{"74":74,"78":78,"94":94}],64:[function(_dereq_,module,exports){
+},{"74":74,"78":78,"96":96}],64:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -18638,7 +18682,7 @@ var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
-var _document = _dereq_(94);
+var _document = _dereq_(96);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -18779,7 +18823,7 @@ var HtmlTrackElementList = function () {
 
 exports['default'] = HtmlTrackElementList;
 
-},{"78":78,"94":94}],66:[function(_dereq_,module,exports){
+},{"78":78,"96":96}],66:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -18788,7 +18832,7 @@ var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
-var _document = _dereq_(94);
+var _document = _dereq_(96);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -18950,7 +18994,7 @@ HTMLTrackElement.ERROR = ERROR;
 
 exports['default'] = HTMLTrackElement;
 
-},{"42":42,"72":72,"78":78,"94":94}],67:[function(_dereq_,module,exports){
+},{"42":42,"72":72,"78":78,"96":96}],67:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -18959,7 +19003,7 @@ var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
-var _document = _dereq_(94);
+var _document = _dereq_(96);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -19104,7 +19148,7 @@ var TextTrackCueList = function () {
 
 exports['default'] = TextTrackCueList;
 
-},{"78":78,"94":94}],68:[function(_dereq_,module,exports){
+},{"78":78,"96":96}],68:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -19117,7 +19161,7 @@ var _fn = _dereq_(83);
 
 var Fn = _interopRequireWildcard(_fn);
 
-var _window = _dereq_(95);
+var _window = _dereq_(97);
 
 var _window2 = _interopRequireDefault(_window);
 
@@ -19456,7 +19500,7 @@ var TextTrackDisplay = function (_Component) {
 _component2['default'].registerComponent('TextTrackDisplay', TextTrackDisplay);
 exports['default'] = TextTrackDisplay;
 
-},{"5":5,"83":83,"95":95}],69:[function(_dereq_,module,exports){
+},{"5":5,"83":83,"97":97}],69:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -19577,7 +19621,7 @@ var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
-var _document = _dereq_(94);
+var _document = _dereq_(96);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -19666,12 +19710,12 @@ var TextTrackList = function (_TrackList) {
 
 exports['default'] = TextTrackList;
 
-},{"74":74,"78":78,"83":83,"94":94}],71:[function(_dereq_,module,exports){
+},{"74":74,"78":78,"83":83,"96":96}],71:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
 
-var _window = _dereq_(95);
+var _window = _dereq_(97);
 
 var _window2 = _interopRequireDefault(_window);
 
@@ -20269,7 +20313,7 @@ _component2['default'].registerComponent('TextTrackSettings', TextTrackSettings)
 
 exports['default'] = TextTrackSettings;
 
-},{"5":5,"81":81,"83":83,"86":86,"88":88,"95":95}],72:[function(_dereq_,module,exports){
+},{"5":5,"81":81,"83":83,"86":86,"88":88,"97":97}],72:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -20288,7 +20332,7 @@ var _log = _dereq_(86);
 
 var _log2 = _interopRequireDefault(_log);
 
-var _window = _dereq_(95);
+var _window = _dereq_(97);
 
 var _window2 = _interopRequireDefault(_window);
 
@@ -20298,7 +20342,7 @@ var _track2 = _interopRequireDefault(_track);
 
 var _url = _dereq_(92);
 
-var _xhr = _dereq_(104);
+var _xhr = _dereq_(109);
 
 var _xhr2 = _interopRequireDefault(_xhr);
 
@@ -20720,7 +20764,7 @@ TextTrack.prototype.allowedEvents_ = {
 
 exports['default'] = TextTrack;
 
-},{"104":104,"67":67,"73":73,"75":75,"78":78,"83":83,"86":86,"87":87,"92":92,"95":95}],73:[function(_dereq_,module,exports){
+},{"109":109,"67":67,"73":73,"75":75,"78":78,"83":83,"86":86,"87":87,"92":92,"97":97}],73:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -20801,7 +20845,7 @@ var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
-var _document = _dereq_(94);
+var _document = _dereq_(96);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -21023,7 +21067,7 @@ for (var event in TrackList.prototype.allowedEvents_) {
 
 exports['default'] = TrackList;
 
-},{"42":42,"78":78,"94":94}],75:[function(_dereq_,module,exports){
+},{"42":42,"78":78,"96":96}],75:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -21032,7 +21076,7 @@ var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
-var _document = _dereq_(94);
+var _document = _dereq_(96);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -21167,7 +21211,7 @@ var Track = function (_EventTarget) {
 
 exports['default'] = Track;
 
-},{"42":42,"78":78,"85":85,"94":94}],76:[function(_dereq_,module,exports){
+},{"42":42,"78":78,"85":85,"96":96}],76:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -21180,7 +21224,7 @@ var _browser = _dereq_(78);
 
 var browser = _interopRequireWildcard(_browser);
 
-var _document = _dereq_(94);
+var _document = _dereq_(96);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -21362,7 +21406,7 @@ var VideoTrackList = function (_TrackList) {
 
 exports['default'] = VideoTrackList;
 
-},{"74":74,"78":78,"94":94}],77:[function(_dereq_,module,exports){
+},{"74":74,"78":78,"96":96}],77:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -21502,7 +21546,7 @@ var _dom = _dereq_(81);
 
 var Dom = _interopRequireWildcard(_dom);
 
-var _window = _dereq_(95);
+var _window = _dereq_(97);
 
 var _window2 = _interopRequireDefault(_window);
 
@@ -21599,7 +21643,7 @@ var TOUCH_ENABLED = exports.TOUCH_ENABLED = Dom.isReal() && ('ontouchstart' in _
 
 var BACKGROUND_SIZE_SUPPORTED = exports.BACKGROUND_SIZE_SUPPORTED = Dom.isReal() && 'backgroundSize' in _window2['default'].document.createElement('video').style;
 
-},{"81":81,"95":95}],79:[function(_dereq_,module,exports){
+},{"81":81,"97":97}],79:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -21656,7 +21700,7 @@ function bufferedPercent(buffered, duration) {
 exports.__esModule = true;
 exports['default'] = computedStyle;
 
-var _window = _dereq_(95);
+var _window = _dereq_(97);
 
 var _window2 = _interopRequireDefault(_window);
 
@@ -21694,7 +21738,7 @@ function computedStyle(el, prop) {
    * @module computed-style
    */
 
-},{"95":95}],81:[function(_dereq_,module,exports){
+},{"97":97}],81:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -21730,11 +21774,11 @@ exports.normalizeContent = normalizeContent;
 exports.appendContent = appendContent;
 exports.insertContent = insertContent;
 
-var _document = _dereq_(94);
+var _document = _dereq_(96);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _window = _dereq_(95);
+var _window = _dereq_(97);
 
 var _window2 = _interopRequireDefault(_window);
 
@@ -21746,7 +21790,7 @@ var _log = _dereq_(86);
 
 var _log2 = _interopRequireDefault(_log);
 
-var _tsml = _dereq_(98);
+var _tsml = _dereq_(103);
 
 var _tsml2 = _interopRequireDefault(_tsml);
 
@@ -22593,7 +22637,7 @@ var $ = exports.$ = createQuerier('querySelector');
  */
 var $$ = exports.$$ = createQuerier('querySelectorAll');
 
-},{"85":85,"86":86,"88":88,"94":94,"95":95,"98":98}],82:[function(_dereq_,module,exports){
+},{"103":103,"85":85,"86":86,"88":88,"96":96,"97":97}],82:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -22615,11 +22659,11 @@ var _log = _dereq_(86);
 
 var _log2 = _interopRequireDefault(_log);
 
-var _window = _dereq_(95);
+var _window = _dereq_(97);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _document = _dereq_(94);
+var _document = _dereq_(96);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -23081,7 +23125,7 @@ function one(elem, type, fn) {
   on(elem, type, func);
 }
 
-},{"81":81,"85":85,"86":86,"94":94,"95":95}],83:[function(_dereq_,module,exports){
+},{"81":81,"85":85,"86":86,"96":96,"97":97}],83:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -23244,7 +23288,7 @@ function newGUID() {
 exports.__esModule = true;
 exports.logByType = undefined;
 
-var _window = _dereq_(95);
+var _window = _dereq_(97);
 
 var _window2 = _interopRequireDefault(_window);
 
@@ -23380,7 +23424,7 @@ log.warn = function () {
 
 exports['default'] = log;
 
-},{"78":78,"88":88,"95":95}],87:[function(_dereq_,module,exports){
+},{"78":78,"88":88,"97":97}],87:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -23590,7 +23634,7 @@ function isPlain(value) {
 exports.__esModule = true;
 exports.setTextContent = exports.createStyleElement = undefined;
 
-var _document = _dereq_(94);
+var _document = _dereq_(96);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -23634,7 +23678,7 @@ var setTextContent = exports.setTextContent = function setTextContent(el, conten
   }
 };
 
-},{"94":94}],90:[function(_dereq_,module,exports){
+},{"96":96}],90:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -23815,11 +23859,11 @@ exports['default'] = toTitleCase;
 exports.__esModule = true;
 exports.isCrossOrigin = exports.getFileExtension = exports.getAbsoluteURL = exports.parseUrl = undefined;
 
-var _document = _dereq_(94);
+var _document = _dereq_(96);
 
 var _document2 = _interopRequireDefault(_document);
 
-var _window = _dereq_(95);
+var _window = _dereq_(97);
 
 var _window2 = _interopRequireDefault(_window);
 
@@ -23984,7 +24028,7 @@ var isCrossOrigin = exports.isCrossOrigin = function isCrossOrigin(url) {
   return crossOrigin;
 };
 
-},{"94":94,"95":95}],93:[function(_dereq_,module,exports){
+},{"96":96,"97":97}],93:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -23999,11 +24043,11 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 // Include the built-in techs
 
 
-var _window = _dereq_(95);
+var _window = _dereq_(97);
 
 var _window2 = _interopRequireDefault(_window);
 
-var _document = _dereq_(94);
+var _document = _dereq_(96);
 
 var _document2 = _interopRequireDefault(_document);
 
@@ -24087,7 +24131,7 @@ var _extend = _dereq_(43);
 
 var _extend2 = _interopRequireDefault(_extend);
 
-var _xhr = _dereq_(104);
+var _xhr = _dereq_(109);
 
 var _xhr2 = _interopRequireDefault(_xhr);
 
@@ -24707,11 +24751,77 @@ if (typeof define === 'function' && define.amd) {
 
 exports['default'] = videojs;
 
-},{"104":104,"42":42,"43":43,"5":5,"51":51,"52":52,"56":56,"62":62,"64":64,"72":72,"77":77,"78":78,"80":80,"81":81,"82":82,"83":83,"84":84,"86":86,"87":87,"88":88,"89":89,"90":90,"92":92,"94":94,"95":95}],94:[function(_dereq_,module,exports){
+},{"109":109,"42":42,"43":43,"5":5,"51":51,"52":52,"56":56,"62":62,"64":64,"72":72,"77":77,"78":78,"80":80,"81":81,"82":82,"83":83,"84":84,"86":86,"87":87,"88":88,"89":89,"90":90,"92":92,"96":96,"97":97}],94:[function(_dereq_,module,exports){
+
+},{}],95:[function(_dereq_,module,exports){
+'use strict';
+
+var isCallable = _dereq_(98);
+
+var toStr = Object.prototype.toString;
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+var forEachArray = function forEachArray(array, iterator, receiver) {
+    for (var i = 0, len = array.length; i < len; i++) {
+        if (hasOwnProperty.call(array, i)) {
+            if (receiver == null) {
+                iterator(array[i], i, array);
+            } else {
+                iterator.call(receiver, array[i], i, array);
+            }
+        }
+    }
+};
+
+var forEachString = function forEachString(string, iterator, receiver) {
+    for (var i = 0, len = string.length; i < len; i++) {
+        // no such thing as a sparse string.
+        if (receiver == null) {
+            iterator(string.charAt(i), i, string);
+        } else {
+            iterator.call(receiver, string.charAt(i), i, string);
+        }
+    }
+};
+
+var forEachObject = function forEachObject(object, iterator, receiver) {
+    for (var k in object) {
+        if (hasOwnProperty.call(object, k)) {
+            if (receiver == null) {
+                iterator(object[k], k, object);
+            } else {
+                iterator.call(receiver, object[k], k, object);
+            }
+        }
+    }
+};
+
+var forEach = function forEach(list, iterator, thisArg) {
+    if (!isCallable(iterator)) {
+        throw new TypeError('iterator must be a function');
+    }
+
+    var receiver;
+    if (arguments.length >= 3) {
+        receiver = thisArg;
+    }
+
+    if (toStr.call(list) === '[object Array]') {
+        forEachArray(list, iterator, receiver);
+    } else if (typeof list === 'string') {
+        forEachString(list, iterator, receiver);
+    } else {
+        forEachObject(list, iterator, receiver);
+    }
+};
+
+module.exports = forEach;
+
+},{"98":98}],96:[function(_dereq_,module,exports){
 (function (global){
 var topLevel = typeof global !== 'undefined' ? global :
     typeof window !== 'undefined' ? window : {}
-var minDoc = _dereq_(96);
+var minDoc = _dereq_(94);
 
 if (typeof document !== 'undefined') {
     module.exports = document;
@@ -24726,7 +24836,7 @@ if (typeof document !== 'undefined') {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"96":96}],95:[function(_dereq_,module,exports){
+},{"94":94}],97:[function(_dereq_,module,exports){
 (function (global){
 if (typeof window !== "undefined") {
     module.exports = window;
@@ -24739,9 +24849,95 @@ if (typeof window !== "undefined") {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],96:[function(_dereq_,module,exports){
+},{}],98:[function(_dereq_,module,exports){
+'use strict';
 
-},{}],97:[function(_dereq_,module,exports){
+var fnToStr = Function.prototype.toString;
+
+var constructorRegex = /^\s*class\b/;
+var isES6ClassFn = function isES6ClassFunction(value) {
+	try {
+		var fnStr = fnToStr.call(value);
+		return constructorRegex.test(fnStr);
+	} catch (e) {
+		return false; // not a function
+	}
+};
+
+var tryFunctionObject = function tryFunctionToStr(value) {
+	try {
+		if (isES6ClassFn(value)) { return false; }
+		fnToStr.call(value);
+		return true;
+	} catch (e) {
+		return false;
+	}
+};
+var toStr = Object.prototype.toString;
+var fnClass = '[object Function]';
+var genClass = '[object GeneratorFunction]';
+var hasToStringTag = typeof Symbol === 'function' && typeof Symbol.toStringTag === 'symbol';
+
+module.exports = function isCallable(value) {
+	if (!value) { return false; }
+	if (typeof value !== 'function' && typeof value !== 'object') { return false; }
+	if (typeof value === 'function' && !value.prototype) { return true; }
+	if (hasToStringTag) { return tryFunctionObject(value); }
+	if (isES6ClassFn(value)) { return false; }
+	var strClass = toStr.call(value);
+	return strClass === fnClass || strClass === genClass;
+};
+
+},{}],99:[function(_dereq_,module,exports){
+module.exports = isFunction
+
+var toString = Object.prototype.toString
+
+function isFunction (fn) {
+  var string = toString.call(fn)
+  return string === '[object Function]' ||
+    (typeof fn === 'function' && string !== '[object RegExp]') ||
+    (typeof window !== 'undefined' &&
+     // IE8 and below
+     (fn === window.setTimeout ||
+      fn === window.alert ||
+      fn === window.confirm ||
+      fn === window.prompt))
+};
+
+},{}],100:[function(_dereq_,module,exports){
+var trim = _dereq_(102)
+  , forEach = _dereq_(95)
+  , isArray = function(arg) {
+      return Object.prototype.toString.call(arg) === '[object Array]';
+    }
+
+module.exports = function (headers) {
+  if (!headers)
+    return {}
+
+  var result = {}
+
+  forEach(
+      trim(headers).split('\n')
+    , function (row) {
+        var index = row.indexOf(':')
+          , key = trim(row.slice(0, index)).toLowerCase()
+          , value = trim(row.slice(index + 1))
+
+        if (typeof(result[key]) === 'undefined') {
+          result[key] = value
+        } else if (isArray(result[key])) {
+          result[key].push(value)
+        } else {
+          result[key] = [ result[key], value ]
+        }
+      }
+  )
+
+  return result
+}
+},{"102":102,"95":95}],101:[function(_dereq_,module,exports){
 module.exports = SafeParseTuple
 
 function SafeParseTuple(obj, reviver) {
@@ -24757,7 +24953,23 @@ function SafeParseTuple(obj, reviver) {
     return [error, json]
 }
 
-},{}],98:[function(_dereq_,module,exports){
+},{}],102:[function(_dereq_,module,exports){
+
+exports = module.exports = trim;
+
+function trim(str){
+  return str.replace(/^\s*|\s*$/g, '');
+}
+
+exports.left = function(str){
+  return str.replace(/^\s*/, '');
+};
+
+exports.right = function(str){
+  return str.replace(/\s*$/, '');
+};
+
+},{}],103:[function(_dereq_,module,exports){
 function clean (s) {
   return s.replace(/\n\r?\s*/g, '')
 }
@@ -24772,7 +24984,7 @@ module.exports = function tsml (sa) {
 
   return s
 }
-},{}],99:[function(_dereq_,module,exports){
+},{}],104:[function(_dereq_,module,exports){
 /**
  * Copyright 2013 vtt.js Contributors
  *
@@ -24794,12 +25006,12 @@ module.exports = function tsml (sa) {
 // forth between JSON. If we don't then it's not that big of a deal since we're
 // off browser.
 
-var window = _dereq_(103);
+var window = _dereq_(108);
 
 var vttjs = module.exports = {
-  WebVTT: _dereq_(100),
-  VTTCue: _dereq_(101),
-  VTTRegion: _dereq_(102)
+  WebVTT: _dereq_(105),
+  VTTCue: _dereq_(106),
+  VTTRegion: _dereq_(107)
 };
 
 window.vttjs = vttjs;
@@ -24824,7 +25036,7 @@ if (!window.VTTCue) {
   vttjs.shim();
 }
 
-},{"100":100,"101":101,"102":102,"103":103}],100:[function(_dereq_,module,exports){
+},{"105":105,"106":106,"107":107,"108":108}],105:[function(_dereq_,module,exports){
 /**
  * Copyright 2013 vtt.js Contributors
  *
@@ -26155,7 +26367,7 @@ WebVTT.Parser.prototype = {
 
 module.exports = WebVTT;
 
-},{}],101:[function(_dereq_,module,exports){
+},{}],106:[function(_dereq_,module,exports){
 /**
  * Copyright 2013 vtt.js Contributors
  *
@@ -26462,7 +26674,7 @@ VTTCue.prototype.getCueAsHTML = function() {
 
 module.exports = VTTCue;
 
-},{}],102:[function(_dereq_,module,exports){
+},{}],107:[function(_dereq_,module,exports){
 /**
  * Copyright 2013 vtt.js Contributors
  *
@@ -26598,7 +26810,7 @@ function VTTRegion() {
 
 module.exports = VTTRegion;
 
-},{}],103:[function(_dereq_,module,exports){
+},{}],108:[function(_dereq_,module,exports){
 (function (global){
 var win;
 
@@ -26615,12 +26827,12 @@ if (typeof window !== "undefined") {
 module.exports = win;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],104:[function(_dereq_,module,exports){
+},{}],109:[function(_dereq_,module,exports){
 "use strict";
-var window = _dereq_(95)
-var isFunction = _dereq_(105)
-var parseHeaders = _dereq_(108)
-var xtend = _dereq_(109)
+var window = _dereq_(97)
+var isFunction = _dereq_(99)
+var parseHeaders = _dereq_(100)
+var xtend = _dereq_(110)
 
 module.exports = createXHR
 createXHR.XMLHttpRequest = window.XMLHttpRequest || noop
@@ -26852,120 +27064,7 @@ function getXml(xhr) {
 
 function noop() {}
 
-},{"105":105,"108":108,"109":109,"95":95}],105:[function(_dereq_,module,exports){
-module.exports = isFunction
-
-var toString = Object.prototype.toString
-
-function isFunction (fn) {
-  var string = toString.call(fn)
-  return string === '[object Function]' ||
-    (typeof fn === 'function' && string !== '[object RegExp]') ||
-    (typeof window !== 'undefined' &&
-     // IE8 and below
-     (fn === window.setTimeout ||
-      fn === window.alert ||
-      fn === window.confirm ||
-      fn === window.prompt))
-};
-
-},{}],106:[function(_dereq_,module,exports){
-var isFunction = _dereq_(105)
-
-module.exports = forEach
-
-var toString = Object.prototype.toString
-var hasOwnProperty = Object.prototype.hasOwnProperty
-
-function forEach(list, iterator, context) {
-    if (!isFunction(iterator)) {
-        throw new TypeError('iterator must be a function')
-    }
-
-    if (arguments.length < 3) {
-        context = this
-    }
-    
-    if (toString.call(list) === '[object Array]')
-        forEachArray(list, iterator, context)
-    else if (typeof list === 'string')
-        forEachString(list, iterator, context)
-    else
-        forEachObject(list, iterator, context)
-}
-
-function forEachArray(array, iterator, context) {
-    for (var i = 0, len = array.length; i < len; i++) {
-        if (hasOwnProperty.call(array, i)) {
-            iterator.call(context, array[i], i, array)
-        }
-    }
-}
-
-function forEachString(string, iterator, context) {
-    for (var i = 0, len = string.length; i < len; i++) {
-        // no such thing as a sparse string.
-        iterator.call(context, string.charAt(i), i, string)
-    }
-}
-
-function forEachObject(object, iterator, context) {
-    for (var k in object) {
-        if (hasOwnProperty.call(object, k)) {
-            iterator.call(context, object[k], k, object)
-        }
-    }
-}
-
-},{"105":105}],107:[function(_dereq_,module,exports){
-
-exports = module.exports = trim;
-
-function trim(str){
-  return str.replace(/^\s*|\s*$/g, '');
-}
-
-exports.left = function(str){
-  return str.replace(/^\s*/, '');
-};
-
-exports.right = function(str){
-  return str.replace(/\s*$/, '');
-};
-
-},{}],108:[function(_dereq_,module,exports){
-var trim = _dereq_(107)
-  , forEach = _dereq_(106)
-  , isArray = function(arg) {
-      return Object.prototype.toString.call(arg) === '[object Array]';
-    }
-
-module.exports = function (headers) {
-  if (!headers)
-    return {}
-
-  var result = {}
-
-  forEach(
-      trim(headers).split('\n')
-    , function (row) {
-        var index = row.indexOf(':')
-          , key = trim(row.slice(0, index)).toLowerCase()
-          , value = trim(row.slice(index + 1))
-
-        if (typeof(result[key]) === 'undefined') {
-          result[key] = value
-        } else if (isArray(result[key])) {
-          result[key].push(value)
-        } else {
-          result[key] = [ result[key], value ]
-        }
-      }
-  )
-
-  return result
-}
-},{"106":106,"107":107}],109:[function(_dereq_,module,exports){
+},{"100":100,"110":110,"97":97,"99":99}],110:[function(_dereq_,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;

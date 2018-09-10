@@ -6,6 +6,7 @@ import Component from '../../component.js';
 import * as Fn from '../../utils/fn.js';
 import formatTime from '../../utils/format-time.js';
 import computedStyle from '../../utils/computed-style.js';
+import window from 'global/window';
 
 import './load-progress-bar.js';
 import './play-progress-bar.js';
@@ -32,6 +33,9 @@ class SeekBar extends Slider {
     this.on(player, 'timeupdate', this.updateProgress);
     this.on(player, 'ended', this.updateProgress);
     player.ready(Fn.bind(this, this.updateProgress));
+
+    this.handleGlobalMouseMove = this.handleGlobalMouseMove.bind(this);
+    this.handleGlobalMouseUp = this.handleGlobalMouseUp.bind(this);
 
     if (options.playerOptions &&
         options.playerOptions.controlBar &&
@@ -113,6 +117,14 @@ class SeekBar extends Slider {
     return percent >= 1 ? 1 : percent;
   }
 
+  handleGlobalMouseMove(event) {
+    this.handleMouseMove(event);
+  }
+
+  handleGlobalMouseUp(event) {
+    this.handleMouseUp(event);
+  }
+
   /**
    * Handle mouse down on seek bar
    *
@@ -126,6 +138,17 @@ class SeekBar extends Slider {
 
     this.videoWasPlaying = !this.player_.paused();
     this.player_.pause();
+
+    /* An iframe can only access its parent if they are on the same domain (Same Origin Policy).
+     * On production, VILOS and the host app are on the same domain but in testing they aren't.
+     * The easiest way to check is just to access it and catch the exception if we don't have access.
+     */
+    try {
+      window.parent.addEventListener('mousemove', this.handleGlobalMouseMove);
+      window.parent.addEventListener('mouseup', this.handleGlobalMouseUp);
+    } catch (e) {
+      // Can't access parent
+    }
 
     super.handleMouseDown(event);
   }
@@ -148,6 +171,13 @@ class SeekBar extends Slider {
 
     // Set new time (tell player to seek to new time)
     this.player_.currentTime(newTime);
+
+    /* timeupdate isn't guaranteed to fire every time it updates
+     * Therefore we want to force the UI to update immediately - Ellation
+     */
+    this.player_.controlBar.currentTimeDisplay.updateContent(null);
+    this.player_.controlBar.progressControl.seekBar.playProgressBar.updateDataAttr(null);
+    this.player_.controlBar.progressControl.seekBar.update();
   }
 
   /**
@@ -160,6 +190,17 @@ class SeekBar extends Slider {
    */
   handleMouseUp(event) {
     super.handleMouseUp(event);
+
+    /* An iframe can only access its parent if they are on the same domain.
+     * On production, VILOS and the host app are on the same domain but in testing they aren't.
+     * The easiest way to check is just to access it and catch the exception if we don't have access.
+     */
+    try {
+      window.parent.removeEventListener('mousemove', this.handleGlobalMouseMove); // eslint-disable-line no-undef
+      window.parent.removeEventListener('mouseup', this.handleGlobalMouseUp); // eslint-disable-line no-undef
+    } catch (e) {
+      // Can't access parent
+    }
 
     this.player_.scrubbing(false);
     if (this.videoWasPlaying) {
