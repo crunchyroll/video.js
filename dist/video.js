@@ -4425,10 +4425,12 @@ var SeekBar = function (_Slider) {
   };
 
   SeekBar.prototype.handleGlobalMouseMove = function handleGlobalMouseMove(event) {
+    console.log('VIDEOJS - global mouse move'); // eslint-disable-line no-console
     this.handleMouseMove(event);
   };
 
   SeekBar.prototype.handleGlobalMouseUp = function handleGlobalMouseUp(event) {
+    console.log('VIDEOJS - global mouse up'); // eslint-disable-line no-console
     this.handleMouseUp(event);
   };
 
@@ -4477,7 +4479,7 @@ var SeekBar = function (_Slider) {
 
     // Don't let video end while scrubbing.
     if (newTime === this.player_.duration()) {
-      console.log('VIDEOJS - hit end, rewinding'); // eslint-disable-line no-console
+      console.log('VIDEOJS - hit end, rewinding', event); // eslint-disable-line no-console
       newTime = newTime - 0.1;
     }
 
@@ -13419,6 +13421,8 @@ var Slider = function (_Component) {
 
   Slider.prototype.calculateDistance = function calculateDistance(event) {
     var position = Dom.getPointerPosition(this.el_, event);
+
+    console.log('VIDEOJS - position.x', position.x, this.vertical()); // eslint-disable-line no-console
 
     if (this.vertical()) {
       return position.y;
@@ -22478,7 +22482,11 @@ function getPointerPosition(el, event) {
   if (event.changedTouches) {
     pageX = event.changedTouches[0].pageX;
     pageY = event.changedTouches[0].pageY;
+
+    console.log('VIDEOJS - change touch pageX', pageX); // eslint-disable-line no-console
   }
+
+  console.log('VIDEOJS - boxW', boxW, boxX, pageX); // eslint-disable-line no-console
 
   position.y = Math.max(0, Math.min(1, (boxY - pageY + boxH) / boxH));
   position.x = Math.max(0, Math.min(1, (pageX - boxX) / boxW));

@@ -672,7 +672,11 @@ export function getPointerPosition(el, event) {
   if (event.changedTouches) {
     pageX = event.changedTouches[0].pageX;
     pageY = event.changedTouches[0].pageY;
+
+    console.log('VIDEOJS - change touch pageX', pageX); // eslint-disable-line no-console
   }
+
+  console.log('VIDEOJS - boxW', boxW, boxX, pageX); // eslint-disable-line no-console
 
   position.y = Math.max(0, Math.min(1, ((boxY - pageY) + boxH) / boxH));
   position.x = Math.max(0, Math.min(1, (pageX - boxX) / boxW));

@@ -208,6 +208,8 @@ class Slider extends Component {
   calculateDistance(event) {
     const position = Dom.getPointerPosition(this.el_, event);
 
+    console.log('VIDEOJS - position.x', position.x, this.vertical()); // eslint-disable-line no-console
+
     if (this.vertical()) {
       return position.y;
     }

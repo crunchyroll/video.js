@@ -118,10 +118,12 @@ class SeekBar extends Slider {
   }
 
   handleGlobalMouseMove(event) {
+    console.log('VIDEOJS - global mouse move'); // eslint-disable-line no-console
     this.handleMouseMove(event);
   }
 
   handleGlobalMouseUp(event) {
+    console.log('VIDEOJS - global mouse up'); // eslint-disable-line no-console
     this.handleMouseUp(event);
   }
 
@@ -166,7 +168,7 @@ class SeekBar extends Slider {
 
     // Don't let video end while scrubbing.
     if (newTime === this.player_.duration()) {
-      console.log('VIDEOJS - hit end, rewinding'); // eslint-disable-line no-console
+      console.log('VIDEOJS - hit end, rewinding', event); // eslint-disable-line no-console
       newTime = newTime - 0.1;
     }
 
