@@ -4477,8 +4477,11 @@ var SeekBar = function (_Slider) {
 
     // Don't let video end while scrubbing.
     if (newTime === this.player_.duration()) {
+      console.log('VIDEOJS - hit end, rewinding'); // eslint-disable-line no-console
       newTime = newTime - 0.1;
     }
+
+    console.log('VIDEOJS - move', newTime, this.player_.duration()); // eslint-disable-line no-console
 
     // Set new time (tell player to seek to new time)
     this.player_.currentTime(newTime);
@@ -4514,6 +4517,8 @@ var SeekBar = function (_Slider) {
     } catch (e) {
       // Can't access parent
     }
+
+    console.log('VIDEOJS - mouse up'); // eslint-disable-line no-console
 
     this.player_.scrubbing(false);
     if (this.videoWasPlaying) {
