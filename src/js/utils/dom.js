@@ -673,7 +673,7 @@ export function getPointerPosition(el, event) {
     pageX = event.changedTouches[0].pageX;
     pageY = event.changedTouches[0].pageY;
 
-    console.log('VIDEOJS - change touch pageX', pageX); // eslint-disable-line no-console
+    // console.log('VIDEOJS - change touch pageX', pageX); // eslint-disable-line no-console
   }
 
   /*
@@ -687,6 +687,8 @@ export function getPointerPosition(el, event) {
   console.log('VIDEOJS - event', event); // eslint-disable-line no-console
   console.log('VIDEOJS - pageX', pageX, 'boxX', boxX, 'boxW', boxW); // eslint-disable-line no-console
   */
+  console.log('VIDEOJS - el', el); // eslint-disable-line no-console
+  console.log('VIDEOJS - event', event); // eslint-disable-line no-console
   console.log('VIDEOJS - pageX', pageX, 'boxX', boxX, 'boxW', boxW); // eslint-disable-line no-console
 
   position.y = Math.max(0, Math.min(1, ((boxY - pageY) + boxH) / boxH));

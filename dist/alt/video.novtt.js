@@ -4472,11 +4472,6 @@ var SeekBar = function (_Slider) {
 
 
   SeekBar.prototype.handleMouseMove = function handleMouseMove(event) {
-    var distance = this.calculateDistance(event);
-
-    if (distance === null) {
-      return;
-    }
     var newTime = this.calculateDistance(event) * this.player_.duration();
 
     // Don't let video end while scrubbing.
@@ -4485,7 +4480,7 @@ var SeekBar = function (_Slider) {
       newTime = newTime - 0.1;
     }
 
-    console.log('VIDEOJS - move', newTime, this.player_.duration()); // eslint-disable-line no-console
+    // console.log('VIDEOJS - move', newTime, this.player_.duration()); // eslint-disable-line no-console
 
     // Set new time (tell player to seek to new time)
     this.player_.currentTime(newTime);
@@ -13425,12 +13420,6 @@ var Slider = function (_Component) {
 
   Slider.prototype.calculateDistance = function calculateDistance(event) {
     var position = Dom.getPointerPosition(this.el_, event);
-
-    if (position === null) {
-      return null;
-    }
-
-    console.log('VIDEOJS - position.x', position.x, this.vertical()); // eslint-disable-line no-console
 
     if (this.vertical()) {
       return position.y;
@@ -22491,7 +22480,7 @@ function getPointerPosition(el, event) {
     pageX = event.changedTouches[0].pageX;
     pageY = event.changedTouches[0].pageY;
 
-    console.log('VIDEOJS - change touch pageX', pageX); // eslint-disable-line no-console
+    // console.log('VIDEOJS - change touch pageX', pageX); // eslint-disable-line no-console
   }
 
   /*
@@ -22505,6 +22494,8 @@ function getPointerPosition(el, event) {
   console.log('VIDEOJS - event', event); // eslint-disable-line no-console
   console.log('VIDEOJS - pageX', pageX, 'boxX', boxX, 'boxW', boxW); // eslint-disable-line no-console
   */
+  console.log('VIDEOJS - el', el); // eslint-disable-line no-console
+  console.log('VIDEOJS - event', event); // eslint-disable-line no-console
   console.log('VIDEOJS - pageX', pageX, 'boxX', boxX, 'boxW', boxW); // eslint-disable-line no-console
 
   position.y = Math.max(0, Math.min(1, (boxY - pageY + boxH) / boxH));

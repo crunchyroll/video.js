@@ -164,11 +164,6 @@ class SeekBar extends Slider {
    * @listens mousemove
    */
   handleMouseMove(event) {
-    const distance = this.calculateDistance(event);
-
-    if (distance === null) {
-      return;
-    }
     let newTime = this.calculateDistance(event) * this.player_.duration();
 
     // Don't let video end while scrubbing.
@@ -177,7 +172,7 @@ class SeekBar extends Slider {
       newTime = newTime - 0.1;
     }
 
-    console.log('VIDEOJS - move', newTime, this.player_.duration()); // eslint-disable-line no-console
+    // console.log('VIDEOJS - move', newTime, this.player_.duration()); // eslint-disable-line no-console
 
     // Set new time (tell player to seek to new time)
     this.player_.currentTime(newTime);
