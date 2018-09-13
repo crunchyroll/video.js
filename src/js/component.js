@@ -1369,6 +1369,7 @@ class Component {
   enableTouchActivity() {
     // Don't continue if the root player doesn't support reporting user activity
     if (!this.player() || !this.player().reportUserActivity) {
+      console.log('VIDEOJS does not support touch activity'); // eslint-disable-line no-console
       return;
     }
 

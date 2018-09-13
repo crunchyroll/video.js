@@ -2237,6 +2237,7 @@ var Component = function () {
   Component.prototype.enableTouchActivity = function enableTouchActivity() {
     // Don't continue if the root player doesn't support reporting user activity
     if (!this.player() || !this.player().reportUserActivity) {
+      console.log('VIDEOJS does not support touch activity'); // eslint-disable-line no-console
       return;
     }
 
@@ -11935,6 +11936,7 @@ var Player = function (_Component) {
     this.setInterval(function () {
       // Check to see if mouse/touch activity has happened
       if (this.userActivity_) {
+        console.log('VIDEOJS - user inactive timeout'); // eslint-disable-line no-console
         // Reset the activity tracker
         this.userActivity_ = false;
 
@@ -11954,6 +11956,7 @@ var Player = function (_Component) {
             // before the next user activity is picked up by the activity check loop
             // causing a flicker
             if (!this.userActivity_) {
+              console.log('VIDEOJS - user inactive timeout'); // eslint-disable-line no-console
               this.userActive(false);
             }
           }, timeout);
@@ -22482,9 +22485,11 @@ function getPointerPosition(el, event) {
     console.log('VIDEOJS - change touch pageX', pageX); // eslint-disable-line no-console
   }
 
+  /*
   console.log('VIDEOJS - el', el); // eslint-disable-line no-console
   console.log('VIDEOJS - event', event); // eslint-disable-line no-console
   console.log('VIDEOJS - pageX', pageX, 'boxX', boxX, 'boxW', boxW); // eslint-disable-line no-console
+  */
 
   position.y = Math.max(0, Math.min(1, (boxY - pageY + boxH) / boxH));
   position.x = Math.max(0, Math.min(1, (pageX - boxX) / boxW));

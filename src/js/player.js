@@ -2780,6 +2780,7 @@ class Player extends Component {
     this.setInterval(function() {
       // Check to see if mouse/touch activity has happened
       if (this.userActivity_) {
+        console.log('VIDEOJS - user inactive timeout'); // eslint-disable-line no-console
         // Reset the activity tracker
         this.userActivity_ = false;
 
@@ -2799,6 +2800,7 @@ class Player extends Component {
             // before the next user activity is picked up by the activity check loop
             // causing a flicker
             if (!this.userActivity_) {
+              console.log('VIDEOJS - user inactive timeout'); // eslint-disable-line no-console
               this.userActive(false);
             }
           }, timeout);
