@@ -677,7 +677,7 @@ export function getPointerPosition(el, event) {
   }
 
   if (boxH === 0 || boxW === 0) {
-    console.log('VIDEOJS - cant get position, bogus element');
+    console.log('VIDEOJS - cant get position, bogus element'); // eslint-disable-line no-console
     return null;
   }
 

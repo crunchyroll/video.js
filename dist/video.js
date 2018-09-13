@@ -4476,6 +4476,11 @@ var SeekBar = function (_Slider) {
 
 
   SeekBar.prototype.handleMouseMove = function handleMouseMove(event) {
+    var distance = this.calculateDistance(event);
+
+    if (distance === null) {
+      return;
+    }
     var newTime = this.calculateDistance(event) * this.player_.duration();
 
     // Don't let video end while scrubbing.
@@ -13424,6 +13429,10 @@ var Slider = function (_Component) {
 
   Slider.prototype.calculateDistance = function calculateDistance(event) {
     var position = Dom.getPointerPosition(this.el_, event);
+
+    if (position === null) {
+      return null;
+    }
 
     console.log('VIDEOJS - position.x', position.x, this.vertical()); // eslint-disable-line no-console
 
@@ -22487,6 +22496,11 @@ function getPointerPosition(el, event) {
     pageY = event.changedTouches[0].pageY;
 
     console.log('VIDEOJS - change touch pageX', pageX); // eslint-disable-line no-console
+  }
+
+  if (boxH === 0 || boxW === 0) {
+    console.log('VIDEOJS - cant get position, bogus element'); // eslint-disable-line no-console
+    return null;
   }
 
   /*

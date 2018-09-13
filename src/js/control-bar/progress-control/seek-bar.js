@@ -165,6 +165,7 @@ class SeekBar extends Slider {
    */
   handleMouseMove(event) {
     const distance = this.calculateDistance(event);
+
     if (distance === null) {
       return;
     }

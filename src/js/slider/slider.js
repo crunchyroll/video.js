@@ -207,6 +207,7 @@ class Slider extends Component {
    */
   calculateDistance(event) {
     const position = Dom.getPointerPosition(this.el_, event);
+
     if (position === null) {
       return null;
     }
