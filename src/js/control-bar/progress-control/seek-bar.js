@@ -164,6 +164,10 @@ class SeekBar extends Slider {
    * @listens mousemove
    */
   handleMouseMove(event) {
+    const distance = this.calculateDistance(event);
+    if (distance === null) {
+      return;
+    }
     let newTime = this.calculateDistance(event) * this.player_.duration();
 
     // Don't let video end while scrubbing.

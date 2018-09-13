@@ -676,6 +676,11 @@ export function getPointerPosition(el, event) {
     console.log('VIDEOJS - change touch pageX', pageX); // eslint-disable-line no-console
   }
 
+  if (boxH === 0 || boxW === 0) {
+    console.log('VIDEOJS - cant get position, bogus element');
+    return null;
+  }
+
   /*
   console.log('VIDEOJS - el', el); // eslint-disable-line no-console
   console.log('VIDEOJS - event', event); // eslint-disable-line no-console
