@@ -1636,8 +1636,10 @@ class Player extends Component {
 
       if (isScrubbing) {
         this.addClass('vjs-scrubbing');
+        this.trigger('scrubstart');
       } else {
         this.removeClass('vjs-scrubbing');
+        this.trigger('scrubend');
       }
 
       return this;

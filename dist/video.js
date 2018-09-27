@@ -1,6 +1,6 @@
 /**
  * @license
- * Video.js 5.20.5 <http://videojs.com/>
+ * Video.js 5.22.0 <http://videojs.com/>
  * Copyright Brightcove, Inc. <https://www.brightcove.com/>
  * Available under Apache License Version 2.0
  * <https://github.com/videojs/video.js/blob/master/LICENSE>
@@ -9405,7 +9405,7 @@ var Player = function (_Component) {
     Player.players[_this.id_] = _this;
 
     // Add a major version class to aid css in plugins
-    var majorVersion = '5.20.5'.split('.')[0];
+    var majorVersion = '5.22.0'.split('.')[0];
 
     _this.addClass('vjs-v' + majorVersion);
 
@@ -10707,8 +10707,10 @@ var Player = function (_Component) {
 
       if (isScrubbing) {
         this.addClass('vjs-scrubbing');
+        this.trigger('scrubstart');
       } else {
         this.removeClass('vjs-scrubbing');
+        this.trigger('scrubend');
       }
 
       return this;
@@ -24329,7 +24331,7 @@ setup.autoSetupTimeout(1, videojs);
  *
  * @type {string}
  */
-videojs.VERSION = '5.20.5';
+videojs.VERSION = '5.22.0';
 
 /**
  * The global options object. These are the settings that take effect
